@@ -146,7 +146,7 @@ END ' || p_sp_name || '_ta;';
       v_pk_cols_tab := v_pk_cols_tab || '
         AND ' || RPAD(vg_pk_rec.column_name, vg_length_rec.name_length + 1, ' ') || '@TAB@' ||  RPAD(vg_pk_rec.column_name, vg_length_rec.name_length + 1, ' ') || '%TYPE DEFAULT NULL';
       v_qry_where_pk := v_qry_where_pk || '
-        AND ' || RPAD(vg_pk_rec.column_name, vg_length_rec.name_length + 1, ' ') || 'LIKE NVL(p_rec.' || vg_pk_rec.column_name || ', '|| vg_pk_rec.column_name ||')';
+        AND ( p_rec.' || vg_pk_rec.column_name || ' IS NULL OR ' || RPAD(vg_pk_rec.column_name, vg_length_rec.name_length + 1, ' ') || 'LIKE p_rec.' || vg_pk_rec.column_name || ')';
     END LOOP;
     CLOSE vg_pk_cur;
     --
@@ -160,13 +160,13 @@ END ' || p_sp_name || '_ta;';
         '|| vc_pref || RPAD(vg_rec.column_name, vg_length_rec.name_length + 1, ' ') || '@TAB@' ||  RPAD(vg_rec.column_name, vg_length_rec.name_length + 1, ' ') || '%TYPE DEFAULT NULL';
       IF ( vg_rec.data_type = 'NUMBER') THEN
         v_qry_where := v_qry_where || '
-        AND NVL( ' || RPAD(vg_rec.column_name, vg_length_rec.name_length + 1 + 6, ' ') || ', 0             ) = NVL( p_' || vg_rec.column_name || ', NVL('|| vg_rec.column_name ||', 0 ) )';
+        AND ( p_' || vg_rec.column_name || ' IS NULL OR ' || RPAD(vg_rec.column_name, vg_length_rec.name_length + 1 + 6, ' ') || ' = ( p_' || vg_rec.column_name || ' ))';
       ELSIF ( vg_rec.data_type = 'DATE') THEN
         v_qry_where := v_qry_where || '
-        AND TRUNC(NVL( ' || RPAD(vg_rec.column_name, vg_length_rec.name_length + 1, ' ') || ', vgc_null_date )) = NVL(TRUNC( p_' || vg_rec.column_name || ' ), TRUNC(NVL('|| vg_rec.column_name ||', vgc_null_date )))';
+        AND ( p_' || vg_rec.column_name || ' IS NULL OR TRUNC(' || RPAD(vg_rec.column_name, vg_length_rec.name_length + 1, ' ') || ') = TRUNC( p_' || vg_rec.column_name || ' ))';
       ELSE
         v_qry_where := v_qry_where || '
-        AND UPPER(NVL( ' || RPAD(vg_rec.column_name, vg_length_rec.name_length + 1, ' ') || ',''0''           )) LIKE UPPER(NVL( p_' || vg_rec.column_name || ', NVL('|| vg_rec.column_name ||',''0'' )) )';
+        AND ( p_' || vg_rec.column_name || ' IS NULL OR UPPER(' || RPAD(vg_rec.column_name, vg_length_rec.name_length + 1, ' ') || ') LIKE UPPER( p_' || vg_rec.column_name || ' ))';
       END IF;
     END LOOP;
     CLOSE vg_cur;
